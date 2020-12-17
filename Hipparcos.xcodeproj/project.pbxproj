@@ -8,12 +8,16 @@
 
 /* Begin PBXFileReference section */
 		8CC8AD29258BAD050082E5FC /* hipparcos.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = hipparcos.py; sourceTree = "<group>"; };
+		8CC8AD2A258C07A60082E5FC /* Create geometry columns.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Create geometry columns.sql"; sourceTree = "<group>"; };
+		8CC8AD2B258C07A60082E5FC /* ReadMe */ = {isa = PBXFileReference; lastKnownFileType = text; name = ReadMe; path = "../../../../../Volumes/RAID 1/Users/grahamgiller/Dropbox/Data/Hipparcos/ReadMe"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		8CC8AD22258BACC40082E5FC = {
 			isa = PBXGroup;
 			children = (
+				8CC8AD2A258C07A60082E5FC /* Create geometry columns.sql */,
+				8CC8AD2B258C07A60082E5FC /* ReadMe */,
 				8CC8AD29258BAD050082E5FC /* hipparcos.py */,
 			);
 			sourceTree = "<group>";
