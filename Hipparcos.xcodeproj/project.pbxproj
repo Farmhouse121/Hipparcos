@@ -6,10 +6,15 @@
 	objectVersion = 50;
 	objects = {
 
+/* Begin PBXFileReference section */
+		8CC8AD29258BAD050082E5FC /* hipparcos.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = hipparcos.py; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
 /* Begin PBXGroup section */
 		8CC8AD22258BACC40082E5FC = {
 			isa = PBXGroup;
 			children = (
+				8CC8AD29258BAD050082E5FC /* hipparcos.py */,
 			);
 			sourceTree = "<group>";
 		};
