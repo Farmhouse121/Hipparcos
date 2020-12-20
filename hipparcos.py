@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
-"""Extract and insert Hipparcos data."""
+"""Extract and insert Hipparcos data. Graham L Giller, 2020."""
 
+# modules
+from os import getenv,chmod
+from re import match,sub
+from tempfile import NamedTemporaryFile
+from ftplib import FTP
 from sys import stderr, stdout, version_info
 from pymysql import connect, DatabaseError, OperationalError, InternalError
 from pymysql.cursors import DictCursor
@@ -11,11 +16,6 @@ class Break(Exception):
     pass
     
 def main():
-    # modules
-    from os import getenv,chmod
-    from re import match,sub
-    from tempfile import NamedTemporaryFile
-
     # arguments
     from argparse import ArgumentParser;
     args = ArgumentParser(epilog="""This script will upload the raw text version of the Hipparcos catalogue into a MySQL database.
@@ -24,7 +24,17 @@ schema from the ReadMe file, create a table in the MySQL database based upon tha
 via LOAD DATA INFILE for speed and the data file is copied to /tmp/ to permit this. If you supply --droptable then the SQL command
 DROP TABLE IF EXISTS <tablename> will be issued. Table creation is done via CREATE TABLE IF NOT EXISTS <tablename>, so --droptable
 is needed to alter the schema of the database copy of the table. The load is done via REPLACE INTO TABLE <tablename>, so existing
-data is replaced by new data always.""");
+data is replaced by new data always.
+
+To fetch the data from the University of Strasburg and then upload into the a database called "Analysis" the command is:
+$ python3 hipparcos.py ~/Downloads --download=cdsarc.u-strasbg.fr --ftpfolder=pub/cats/I/239 --update
+This code will not update the database unless you supply the --update switch.
+
+The code connects to a MySQL database via the pymysql package. It uses an ODBC-like connection string to define the connection, which can
+contain the keywords: server=<SERVERNAME>;database=<DATABASE>;uid=<USERNAME>;pwd=<PASSWORD>. If it doesn't find those strings, then
+sensible defaults are used. If the password is not specified in the connection string or in the MYSQLPASSWORD environment variable
+it will attempt to read it from the command line. It uses the getpass package to suppress the echoing of the password if possible.""");
+    
     args.add_argument("-D","--database", type=str, default="database=Analysis", help='Database connection.')
     args.add_argument("-H","--hidden", action='store_true', help="Prevent arguments and secrets being echoed to the terminal.")
     args.add_argument("-U","--update", action='store_true', help='Update database data.')
@@ -38,6 +48,9 @@ data is replaced by new data always.""");
     args.add_argument("-K","--key",type=str,default=None,help="Unique key specification.")
     args.add_argument("-B","--heartbeat",type=int,default=1000,help="Status update frequency.")
     args.add_argument("-G","--geometry",action='store_true',help="Set to add geometry fields for spatial extensions.")
+    args.add_argument("-d","--download",type=str,default=None,help="Attempt to download files from this remote server by ftp.")
+    args.add_argument("-f","--ftpfolder",type=str,default=None,help="Set the folder to download from.")
+    args.add_argument("-b","--blocksize",type=int,default=65535,help="Set the block size for ftp transfers. Default is larger than normal.")
     args = args.parse_args();
     
     if args.tablename==None:
@@ -69,7 +82,34 @@ data is replaced by new data always.""");
 
     if 'server' not in database or database['server'] == '' or database['server'] == None:
         database['server'] = 'localhost'
-
+        
+    # ftp the files
+    if args.download:
+        print("Making anonymous ftp connection to %s." % args.download)
+        
+        with FTP(args.download) as ftp:
+            ftp.login()
+            
+            if args.ftpfolder:
+                ftp.cwd(args.ftpfolder)
+                print("Set working directory to %s." % args.ftpfolder)
+                files=ftp.nlst()
+                print("Folder contains %d files." % len(files))
+                
+            for filename in [f for f in (args.readme,args.datafile) if f in files]:
+                localfile=args.folder+'/'+filename
+                print("Attempting to transfer %s to %s." % (filename,localfile))
+                
+                with open(localfile,"wb") as datafile:
+                    def callback(block):
+                        datafile.write(block)
+                        stdout.write(".")
+                        stdout.flush()
+                        
+                    ftp.retrbinary("RETR "+filename,callback,args.blocksize)
+            
+            print("\nFile transfers completed.")
+                                
     # initial processing on files
     filename=args.folder+'/'+args.readme
     print("Opening %s to read table schema." % filename)
