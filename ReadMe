@@ -1,0 +1,17 @@
+hipparcos.py: This script will upload the raw text version of the Hipparcos catalogue into a MySQL database.
+
+You supply the name of a folder that contains both the ReadMe file for the catalogue and the raw data file. It will read the catalogue
+schema from the ReadMe file, create a table in the MySQL database based upon that schema, and insert the data. The insert is done
+via LOAD DATA INFILE for speed and the data file is copied to /tmp/ to permit this. If you supply --droptable then the SQL command
+DROP TABLE IF EXISTS <tablename> will be issued. Table creation is done via CREATE TABLE IF NOT EXISTS <tablename>, so --droptable
+is needed to alter the schema of the database copy of the table. The load is done via REPLACE INTO TABLE <tablename>, so existing
+data is replaced by new data always.
+
+To fetch the data from the University of Strasburg and then upload into the a database called "Analysis" (the default) the command is:
+$ python3 hipparcos.py ~/Downloads --download=cdsarc.u-strasbg.fr --ftpfolder=pub/cats/I/239 --update
+This code will not update the database unless you supply the --update switch.
+
+The code connects to a MySQL database via the pymysql package. It uses an ODBC-like connection string to define the connection, which can
+contain the keywords: server=<SERVERNAME>;database=<DATABASE>;uid=<USERNAME>;pwd=<PASSWORD>. If it doesn't find those strings, then
+sensible defaults are used. If the password is not specified in the connection string or in the MYSQLPASSWORD environment variable
+it will attempt to read it from the command line. It uses the getpass package to suppress the echoing of the password if possible.
