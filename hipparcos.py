@@ -26,7 +26,7 @@ DROP TABLE IF EXISTS <tablename> will be issued. Table creation is done via CREA
 is needed to alter the schema of the database copy of the table. The load is done via REPLACE INTO TABLE <tablename>, so existing
 data is replaced by new data always.
 
-To fetch the data from the University of Strasburg and then upload into the a database called "Analysis" the command is:
+To fetch the data from the University of Strasburg and then upload into the a database called "Analysis" (the default) the command is:
 $ python3 hipparcos.py ~/Downloads --download=cdsarc.u-strasbg.fr --ftpfolder=pub/cats/I/239 --update
 This code will not update the database unless you supply the --update switch.
 
@@ -35,7 +35,7 @@ contain the keywords: server=<SERVERNAME>;database=<DATABASE>;uid=<USERNAME>;pwd
 sensible defaults are used. If the password is not specified in the connection string or in the MYSQLPASSWORD environment variable
 it will attempt to read it from the command line. It uses the getpass package to suppress the echoing of the password if possible.""");
     
-    args.add_argument("-D","--database", type=str, default="database=Analysis", help='Database connection.')
+    args.add_argument("-D","--database", type=str, default="database=Analysis", help='Database connection string, may contain: server=<SERVERNAME>;database=<DATABASE>;uid=<USERNAME>;pwd=<PASSWORD>')
     args.add_argument("-H","--hidden", action='store_true', help="Prevent arguments and secrets being echoed to the terminal.")
     args.add_argument("-U","--update", action='store_true', help='Update database data.')
     args.add_argument("folder",type=str,help="Folder name for Hipparcos data.")
